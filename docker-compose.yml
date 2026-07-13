@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: pdf_chat_db
+    restart: always
+    environment:
+      POSTGRES_USER: pdf_user
+      POSTGRES_PASSWORD: pdf_password_123
+      POSTGRES_DB: pdf_chat
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pdf_chat_backend
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://pdf_user:pdf_password_123@db:5432/pdf_chat
+      - SECRET_KEY=9a8d9a2472b53c7a2b0e014522d1033b004a43b2f56a31cde72e9a6df24a520c
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - CHROMA_DB_PATH=/app/chroma_db
+      - UPLOAD_DIR=/app/uploads
+    ports:
+      - "8000:8000"
+    volumes:
+      - backend_uploads:/app/uploads
+      - backend_chroma:/app/chroma_db
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pdf_chat_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  backend_uploads:
+  backend_chroma:
