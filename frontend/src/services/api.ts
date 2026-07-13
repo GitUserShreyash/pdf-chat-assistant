@@ -1,4 +1,13 @@
-const API_BASE_URL = '/api';
+const getApiBaseUrl = () => {
+  const hostname = window.location.hostname;
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:8001/api';
+  }
+  // Dynamically replace frontend with backend in the hostname for Render deployments
+  return `https://${hostname.replace('frontend', 'backend')}/api`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 class ApiClient {
   private getHeaders(isMultipart = false): HeadersInit {
