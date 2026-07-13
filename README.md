@@ -1,14 +1,14 @@
 # AI PDF Chat with RAG Pipeline
 
-A production-ready full-stack AI application that enables users to upload PDF documents, extract text, chunk content, generate vector embeddings using Google Gemini Embeddings API, store them in a local ChromaDB, and hold grounded chats with the document content using the Gemini LLM. The system outputs responses with page-specific source citations.
+A production-ready full-stack AI application that enables users to upload PDF documents, extract text, chunk content, generate vector embeddings using Google Gemini Embeddings API, store them natively in a local database index, and hold grounded chats with the document content using the Gemini LLM. The system outputs responses with page-specific source citations.
 
 ---
 
 ## Tech Stack
 
-- **Backend**: FastAPI (Python), SQLAlchemy ORM, SQLite (local) / PostgreSQL (production/docker), PyPDF (pure python parser), ChromaDB (in-memory persistent vector store).
-- **Frontend**: React, TypeScript, Vite, Tailwind CSS (modern dark-mode glassmorphic theme), Lucide Icons.
-- **AI Engine**: Google Gen AI SDK (Gemini 2.5 Flash for RAG, text-embedding-004 for search index).
+- **Backend**: FastAPI (Python), SQLAlchemy ORM, SQLite (local) / PostgreSQL (production/docker), PyPDF (pure python parser), SQL-backed local vector index (no complex ChromaDB dependencies).
+- **Frontend**: React, TypeScript, Vite, Tailwind CSS (modern light-theme glassmorphism), Lucide Icons.
+- **AI Engine**: Google Gen AI SDK (Gemini 3.5 Flash for RAG generation, gemini-embedding-2 for embedding queries).
 - **Orchestration**: Docker & Docker Compose.
 
 ---
@@ -28,7 +28,7 @@ A production-ready full-stack AI application that enables users to upload PDF do
              (Relational DB)│           │(Vector DB & API calls)
                             ▼           ▼
                      ┌──────────┐  ┌───────────┐
-                     │SQLite/PG │  │ ChromaDB  │ ◄───► Google Gemini API
+                     │SQLite/PG │  │ SQL Index │ ◄───► Google Gemini API
                      └──────────┘  └───────────┘       (LLM & Embeddings)
 ```
 
@@ -36,7 +36,7 @@ A production-ready full-stack AI application that enables users to upload PDF do
 
 ## Quick Start (Local Development)
 
-### Prerequisite
+### Prerequisites
 1. **Python 3.11+** installed.
 2. **Node.js 18+** installed.
 3. **Google Gemini API Key** (Get one from Google AI Studio).
@@ -71,14 +71,14 @@ A production-ready full-stack AI application that enables users to upload PDF do
    ```
    Open the `.env` file and insert your Google Gemini API key:
    ```env
-   GEMINI_API_KEY=AIzaSy...your-actual-api-key...
+   GEMINI_API_KEY=your-gemini-api-key-here
    ```
 
 5. Start the FastAPI development server:
    ```bash
-   uvicorn app.main:app --reload
+   uvicorn app.main:app --port 8001
    ```
-   The backend API will run at `http://localhost:8000`. You can inspect the interactive Swagger API documentation at `http://localhost:8000/docs`.
+   The backend API will run at `http://localhost:8001`. You can inspect the interactive Swagger API documentation at `http://localhost:8001/docs`.
 
 ---
 
@@ -98,7 +98,7 @@ A production-ready full-stack AI application that enables users to upload PDF do
    ```bash
    npm run dev
    ```
-   The frontend UI will run at `http://localhost:5173`. Open this URL in your web browser.
+   Vite will start the dev server (defaults to `http://localhost:5173` or automatically binds to `http://localhost:5174` if `5173` is in use). Open the displayed URL in your browser.
 
 ---
 
@@ -128,8 +128,8 @@ You can run the entire stack (PostgreSQL Database, FastAPI Backend, React Fronte
 
 - `POST /api/auth/register` - Create a new user account.
 - `POST /api/auth/login` - Authenticate credentials and receive a JWT.
-- `POST /api/documents/upload` - Upload PDF file, parse page text, chunk, generate embeddings, and store in index.
+- `POST /api/documents/upload` - Upload PDF file, parse page text, chunk, generate embeddings, and store in relational table.
 - `GET /api/documents` - Fetch current user's uploaded documents.
-- `POST /api/documents/{id}/summary` - Generate/Retrieve an AI executive summary for a document.
-- `POST /api/chat/ask` - Send a prompt query, search ChromaDB, construct RAG prompt, call Gemini model, record chat context, return response with citation metadata.
+- `POST /api/documents/{id}/summary` - Generate/Retrieve an AI executive summary for a document using Gemini 3.5 Flash.
+- `POST /api/chat/ask` - Send a prompt query, search embeddings in SQL, construct RAG prompt, call Gemini 3.5 Flash, record chat context, return response with citation metadata.
 - `GET /api/chat/history` - Load history of conversations.
