@@ -1,11 +1,10 @@
-services:
-  # Database Service (PostgreSQL)
-  - type: db
-    name: pdf-chat-db
+databases:
+  - name: pdf-chat-db
     databaseName: pdf_chat
     user: pdf_user
     plan: free
 
+services:
   # Backend Web Service (FastAPI)
   - type: web
     name: pdf-chat-backend
