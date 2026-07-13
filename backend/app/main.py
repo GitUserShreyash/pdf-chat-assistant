@@ -4,8 +4,22 @@ from app.core.config import settings
 from app.core.database import engine, Base
 from app.routers import auth, documents, chat
 
+import time
+from sqlalchemy.exc import OperationalError
+
 # Automatically create relational database tables (SQLite / PostgreSQL)
-Base.metadata.create_all(bind=engine)
+# Retrying connection to PostgreSQL if it is booting up in a cloud container network
+max_retries = 10
+for i in range(max_retries):
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("Database tables initialized successfully!")
+        break
+    except OperationalError as e:
+        if i == max_retries - 1:
+            raise e
+        print(f"Database not ready yet (attempt {i+1}/{max_retries}). Retrying in 4 seconds...")
+        time.sleep(4)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
