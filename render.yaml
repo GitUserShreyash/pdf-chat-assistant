@@ -1,0 +1,36 @@
+services:
+  # Database Service (PostgreSQL)
+  - type: db
+    name: pdf-chat-db
+    databaseName: pdf_chat
+    user: pdf_user
+    plan: free
+
+  # Backend Web Service (FastAPI)
+  - type: web
+    name: pdf-chat-backend
+    env: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pdf-chat-db
+          property: connectionString
+      - key: SECRET_KEY
+        value: 9a8d9a2472b53c7a2b0e014522d1033b004a43b2f56a31cde72e9a6df24a520c
+      - key: GEMINI_API_KEY
+        sync: false # User will input this in the Render dashboard
+
+  # Frontend Web Service (React served via Nginx)
+  - type: web
+    name: pdf-chat-frontend
+    env: docker
+    dockerfilePath: frontend/Dockerfile
+    dockerContext: frontend
+    plan: free
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
