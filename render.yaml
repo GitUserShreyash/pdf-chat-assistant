@@ -29,7 +29,3 @@ services:
     dockerfilePath: frontend/Dockerfile
     dockerContext: frontend
     plan: free
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
