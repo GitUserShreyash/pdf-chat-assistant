@@ -14,7 +14,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  backend:
+  pdf-chat-backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -43,7 +43,7 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - backend
+      - pdf-chat-backend
 
 volumes:
   postgres_data:
